@@ -174,14 +174,10 @@
             margin-bottom: 10px;
             border-radius: 8px;
             border-left: 4px solid #3742fa;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
         }
 
         .quote-content {
-            flex: 1;
-            margin-right: 15px;
+            width: 100%;
         }
 
         .quote-item-text {
@@ -193,17 +189,6 @@
             font-weight: bold;
             color: #666;
             font-size: 0.9rem;
-        }
-
-        .delete-quote {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            flex-shrink: 0;
         }
 
         .stats {
@@ -328,6 +313,7 @@
             
             <div class="quote-list-section">
                 <h3>Your Quotes</h3>
+                <button onclick="deleteQuoteByNumber()" style="background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px;">Delete Quote by Number</button>
                 <div id="quotesList"></div>
             </div>
         </div>
@@ -497,17 +483,33 @@
             document.getElementById('newQuoteAuthor').value = '';
         }
 
-        // Delete a quote
-        function deleteQuote(index) {
-            if (confirm('Are you sure you want to delete this quote?')) {
+        // Delete a quote by number (more compatible approach)
+        function deleteQuoteByNumber() {
+            if (quotes.length === 0) {
+                alert('No quotes to delete!');
+                return;
+            }
+            
+            const quoteNumber = prompt(`Enter the number of the quote to delete (1-${quotes.length}):`);
+            if (quoteNumber === null) return; // User cancelled
+            
+            const index = parseInt(quoteNumber) - 1;
+            if (isNaN(index) || index < 0 || index >= quotes.length) {
+                alert('Invalid quote number! Please enter a number between 1 and ' + quotes.length);
+                return;
+            }
+            
+            const quote = quotes[index];
+            if (confirm(`Are you sure you want to delete this quote?\n\n"${quote.text}"\n— ${quote.author || 'Unknown'}`)) {
                 quotes.splice(index, 1);
                 saveQuotes();
                 updateQuotesList();
                 updateStats();
+                alert('Quote deleted successfully!');
             }
         }
 
-        // Update quotes list display
+        // Update quotes list display (simplified without individual delete buttons)
         function updateQuotesList() {
             const list = document.getElementById('quotesList');
             list.innerHTML = '';
@@ -515,23 +517,13 @@
             quotes.forEach((quote, index) => {
                 const item = document.createElement('div');
                 item.className = 'quote-item';
-                
-                const content = document.createElement('div');
-                content.className = 'quote-content';
-                content.innerHTML = `
-                    <div class="quote-item-text">"${quote.text}"</div>
-                    <div class="quote-item-author">${quote.author || 'Unknown'}</div>
+                item.innerHTML = `
+                    <div class="quote-content">
+                        <strong>#${index + 1}</strong>
+                        <div class="quote-item-text">"${quote.text}"</div>
+                        <div class="quote-item-author">${quote.author || 'Unknown'}</div>
+                    </div>
                 `;
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-quote';
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.addEventListener('click', function() {
-                    deleteQuote(index);
-                });
-                
-                item.appendChild(content);
-                item.appendChild(deleteBtn);
                 list.appendChild(item);
             });
         }
