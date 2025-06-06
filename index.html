@@ -515,13 +515,23 @@
             quotes.forEach((quote, index) => {
                 const item = document.createElement('div');
                 item.className = 'quote-item';
-                item.innerHTML = `
-                    <div class="quote-content">
-                        <div class="quote-item-text">"${quote.text}"</div>
-                        <div class="quote-item-author">${quote.author || 'Unknown'}</div>
-                    </div>
-                    <button class="delete-quote" onclick="deleteQuote(${index})">Delete</button>
+                
+                const content = document.createElement('div');
+                content.className = 'quote-content';
+                content.innerHTML = `
+                    <div class="quote-item-text">"${quote.text}"</div>
+                    <div class="quote-item-author">${quote.author || 'Unknown'}</div>
                 `;
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-quote';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.addEventListener('click', function() {
+                    deleteQuote(index);
+                });
+                
+                item.appendChild(content);
+                item.appendChild(deleteBtn);
                 list.appendChild(item);
             });
         }
