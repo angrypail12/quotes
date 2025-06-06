@@ -24,55 +24,51 @@
         }
 
         .quote-container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            max-width: 90vw;
-            max-height: 80vh;
+            background: rgba(255, 255, 255, 0.85);
+            padding: clamp(10px, 3vw, 30px);
+            border-radius: clamp(8px, 2vw, 15px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            max-width: 95vw;
+            max-height: 90vh;
+            width: 100%;
             overflow-y: auto;
             text-align: center;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 10px;
         }
 
         .quote-text {
-            font-size: clamp(1rem, 4vw, 2.5rem);
-            line-height: 1.4;
+            font-size: clamp(0.8rem, 6vw, 2.5rem);
+            line-height: 1.2;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: clamp(10px, 3vw, 20px);
             font-style: italic;
             word-wrap: break-word;
+            hyphens: auto;
         }
 
         .quote-author {
-            font-size: clamp(0.8rem, 2.5vw, 1.2rem);
+            font-size: clamp(0.7rem, 4vw, 1.2rem);
             color: #666;
             font-weight: bold;
         }
 
         .time-display {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            display: none;
         }
 
         .management-toggle {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 10px;
+            left: 10px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             transition: background 0.3s ease;
         }
 
@@ -220,16 +216,21 @@
 
         .refresh-btn {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            bottom: 10px;
+            right: 10px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 50%;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 14px;
             transition: background 0.3s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .refresh-btn:hover {
@@ -237,28 +238,57 @@
         }
 
         /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .quote-container {
-                padding: 20px;
-                margin: 10px;
+        @media (max-width: 400px) {
+            .management-toggle {
+                display: none;
             }
             
-            .time-display, .management-toggle, .refresh-btn {
-                position: relative;
-                margin: 10px auto;
-                display: block;
+            .quote-container {
+                margin: 5px;
+                padding: clamp(8px, 2vw, 15px);
+                max-width: 98vw;
+                max-height: 95vh;
+            }
+            
+            .refresh-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+                bottom: 5px;
+                right: 5px;
+            }
+        }
+        
+        @media (max-width: 300px) {
+            .quote-container {
+                margin: 2px;
+                padding: clamp(5px, 1.5vw, 10px);
+            }
+            
+            .quote-text {
+                font-size: clamp(0.7rem, 7vw, 2rem);
+                line-height: 1.1;
+            }
+            
+            .quote-author {
+                font-size: clamp(0.6rem, 5vw, 1rem);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .quote-container {
+                padding: clamp(8px, 2.5vw, 20px);
+                margin: 5px;
             }
             
             .management-content {
-                padding: 20px;
-                margin: 10px;
+                padding: 15px;
+                margin: 5px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="time-display" id="timeDisplay"></div>
-    
     <button class="management-toggle" onclick="toggleManagement()">Manage Quotes</button>
     
     <div class="quote-container">
@@ -266,7 +296,7 @@
         <div class="quote-author" id="quoteAuthor"></div>
     </div>
     
-    <button class="refresh-btn" onclick="showNewQuote()">New Quote</button>
+    <button class="refresh-btn" onclick="showNewQuote()" title="New Quote">↻</button>
 
     <div class="management-panel" id="managementPanel">
         <div class="management-content">
@@ -346,12 +376,10 @@
             loadQuotes();
             setRandomBackground();
             showNewQuote();
-            updateTimeDisplay();
             updateStats();
             
             // Set up hourly quote change
             setInterval(checkQuoteChange, 60000); // Check every minute
-            setInterval(updateTimeDisplay, 1000); // Update time every second
         }
 
         // Load quotes from localStorage or use defaults
@@ -421,12 +449,6 @@
                 showNewQuote();
             }
             updateStats();
-        }
-
-        // Update time display
-        function updateTimeDisplay() {
-            const now = new Date();
-            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString();
         }
 
         // Update stats
