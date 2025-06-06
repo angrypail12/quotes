@@ -199,6 +199,15 @@
             text-align: center;
         }
 
+        kbd {
+            background: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 3px;
+            padding: 2px 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
         .refresh-btn {
             position: absolute;
             bottom: 10px;
@@ -313,7 +322,15 @@
             
             <div class="quote-list-section">
                 <h3>Your Quotes</h3>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeaa7;">
+                    <strong>Keyboard Controls (if buttons don't work):</strong><br>
+                    • Press <kbd>D</kbd> then quote number (1-9) to delete<br>
+                    • Press <kbd>N</kbd> to show new quote<br>
+                    • Press <kbd>A</kbd> to add quote via prompt<br>
+                    • Example: Press D then 3 to delete quote #3
+                </div>
                 <button onclick="deleteQuoteByNumber()" style="background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px;">Delete Quote by Number</button>
+                <button onclick="addQuoteViaPrompt()" style="background: #2ed573; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; margin-left: 10px;">Add Quote via Prompt</button>
                 <div id="quotesList"></div>
             </div>
         </div>
@@ -363,9 +380,13 @@
             setRandomBackground();
             showNewQuote();
             updateStats();
+            setupKeyboardControls();
             
             // Set up hourly quote change
             setInterval(checkQuoteChange, 60000); // Check every minute
+            
+            // Debug: Check if JavaScript is working
+            console.log('Quote app initialized, quotes:', quotes.length);
         }
 
         // Load quotes from localStorage or use defaults
@@ -481,6 +502,67 @@
             // Clear form
             document.getElementById('newQuoteText').value = '';
             document.getElementById('newQuoteAuthor').value = '';
+        }
+
+        // Add quote via prompt (alternative method)
+        function addQuoteViaPrompt() {
+            const text = prompt('Enter quote text:');
+            if (!text) return;
+            
+            const author = prompt('Enter author (optional):');
+            quotes.push({ text: text.trim(), author: author ? author.trim() : '' });
+            saveQuotes();
+            updateQuotesList();
+            updateStats();
+            alert('Quote added successfully!');
+        }
+
+        // Keyboard shortcuts for NanoBrowser compatibility
+        let deleteMode = false;
+        
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', function(event) {
+                // Only work when management panel is open
+                const panel = document.getElementById('managementPanel');
+                if (panel.style.display !== 'block') return;
+                
+                const key = event.key.toLowerCase();
+                
+                if (key === 'd') {
+                    deleteMode = true;
+                    alert('Delete mode activated. Press a number 1-9 to delete that quote.');
+                    return;
+                }
+                
+                if (key === 'n') {
+                    showNewQuote();
+                    alert('New quote shown!');
+                    return;
+                }
+                
+                if (key === 'a') {
+                    addQuoteViaPrompt();
+                    return;
+                }
+                
+                // Handle delete by number
+                if (deleteMode && key >= '1' && key <= '9') {
+                    const index = parseInt(key) - 1;
+                    if (index < quotes.length) {
+                        const quote = quotes[index];
+                        if (confirm(`Delete this quote?\n\n"${quote.text}"\n— ${quote.author || 'Unknown'}`)) {
+                            quotes.splice(index, 1);
+                            saveQuotes();
+                            updateQuotesList();
+                            updateStats();
+                            alert('Quote deleted!');
+                        }
+                    } else {
+                        alert(`No quote #${key}. You have ${quotes.length} quotes.`);
+                    }
+                    deleteMode = false;
+                }
+            });
         }
 
         // Delete a quote by number (more compatible approach)
