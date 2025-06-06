@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Quotes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.5s ease;
+            position: relative;
+        }
+
+        .quote-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .quote-text {
+            font-size: clamp(1rem, 4vw, 2.5rem);
+            line-height: 1.4;
+            color: #333;
+            margin-bottom: 20px;
+            font-style: italic;
+            word-wrap: break-word;
+        }
+
+        .quote-author {
+            font-size: clamp(0.8rem, 2.5vw, 1.2rem);
+            color: #666;
+            font-weight: bold;
+        }
+
+        .time-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .management-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .management-toggle:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .management-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .management-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .management-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .close-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .quote-input-section, .quote-list-section {
+            margin-bottom: 30px;
+        }
+
+        .quote-input-section h3, .quote-list-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .quote-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quote-form input, .quote-form textarea {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .quote-form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .quote-form button {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .quote-form button:hover {
+            background: #26de81;
+        }
+
+        .file-upload {
+            margin-bottom: 15px;
+        }
+
+        .file-upload input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .quote-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #3742fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .quote-content {
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .quote-item-text {
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .quote-item-author {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .delete-quote {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .stats {
+            background: #e1f5fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .refresh-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .quote-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .time-display, .management-toggle, .refresh-btn {
+                position: relative;
+                margin: 10px auto;
+                display: block;
+            }
+            
+            .management-content {
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="time-display" id="timeDisplay"></div>
+    
+    <button class="management-toggle" onclick="toggleManagement()">Manage Quotes</button>
+    
+    <div class="quote-container">
+        <div class="quote-text" id="quoteText">Loading your inspirational quote...</div>
+        <div class="quote-author" id="quoteAuthor"></div>
+    </div>
+    
+    <button class="refresh-btn" onclick="showNewQuote()">New Quote</button>
+
+    <div class="management-panel" id="managementPanel">
+        <div class="management-content">
+            <div class="management-header">
+                <h2>Quote Management</h2>
+                <button class="close-btn" onclick="toggleManagement()">Close</button>
+            </div>
+            
+            <div class="stats">
+                <h4>Library Stats</h4>
+                <p>Total Quotes: <span id="quoteCount">0</span></p>
+                <p>Next Quote Change: <span id="nextChange"></span></p>
+            </div>
+            
+            <div class="quote-input-section">
+                <h3>Add New Quote</h3>
+                <div class="quote-form">
+                    <textarea placeholder="Enter your quote here..." id="newQuoteText"></textarea>
+                    <input type="text" placeholder="Author (optional)" id="newQuoteAuthor">
+                    <button onclick="addQuote()">Add Quote</button>
+                </div>
+                
+                <div class="file-upload">
+                    <h4>Or Upload Quote File</h4>
+                    <input type="file" id="fileInput" accept=".txt,.json" onchange="handleFileUpload(event)">
+                    <small>Upload a .txt file (one quote per line, format: "Quote text" - Author) or .json file</small>
+                </div>
+            </div>
+            
+            <div class="quote-list-section">
+                <h3>Your Quotes</h3>
+                <div id="quotesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let quotes = [];
+        let currentQuoteIndex = 0;
+        let lastQuoteChange = Date.now();
+        const QUOTE_CHANGE_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
+
+        // Background patterns and colors
+        const backgrounds = [
+            'linear-gradient(45deg, #ff6b6b, #feca57)',
+            'linear-gradient(135deg, #667eea, #764ba2)',
+            'linear-gradient(45deg, #f093fb, #f5576c)',
+            'linear-gradient(135deg, #4facfe, #00f2fe)',
+            'linear-gradient(45deg, #43e97b, #38f9d7)',
+            'linear-gradient(135deg, #fa709a, #fee140)',
+            'linear-gradient(45deg, #a8edea, #fed6e3)',
+            'linear-gradient(135deg, #ff9a9e, #fecfef)',
+            'linear-gradient(45deg, #ffecd2, #fcb69f)',
+            'linear-gradient(135deg, #ff8a80, #ff5722)',
+            'radial-gradient(circle, #667eea, #764ba2)',
+            'conic-gradient(from 45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3)',
+            'linear-gradient(90deg, #74b9ff, #0984e3, #6c5ce7)',
+            'linear-gradient(45deg, #fd79a8, #fdcb6e, #e17055)',
+            'repeating-linear-gradient(45deg, #667eea 0px, #667eea 10px, #764ba2 10px, #764ba2 20px)'
+        ];
+
+        // Default quotes
+        const defaultQuotes = [
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+            { text: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs" },
+            { text: "Life is what happens to you while you're busy making other plans.", author: "John Lennon" },
+            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+            { text: "It is during our darkest moments that we must focus to see the light.", author: "Aristotle" },
+            { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
+            { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+            { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" }
+        ];
+
+        // Initialize the app
+        function init() {
+            loadQuotes();
+            setRandomBackground();
+            showNewQuote();
+            updateTimeDisplay();
+            updateStats();
+            
+            // Set up hourly quote change
+            setInterval(checkQuoteChange, 60000); // Check every minute
+            setInterval(updateTimeDisplay, 1000); // Update time every second
+        }
+
+        // Load quotes from localStorage or use defaults
+        function loadQuotes() {
+            try {
+                const stored = localStorage.getItem('personalQuotes');
+                if (stored) {
+                    quotes = JSON.parse(stored);
+                }
+                if (quotes.length === 0) {
+                    quotes = [...defaultQuotes];
+                    saveQuotes();
+                }
+            } catch (error) {
+                // If localStorage fails (like in Claude's artifact viewer), use in-memory storage
+                quotes = [...defaultQuotes];
+            }
+        }
+
+        // Save quotes to localStorage
+        function saveQuotes() {
+            try {
+                localStorage.setItem('personalQuotes', JSON.stringify(quotes));
+                const changeTime = localStorage.getItem('lastQuoteChange');
+                if (changeTime) {
+                    lastQuoteChange = parseInt(changeTime);
+                } else {
+                    lastQuoteChange = Date.now();
+                    localStorage.setItem('lastQuoteChange', lastQuoteChange.toString());
+                }
+            } catch (error) {
+                // Handle localStorage not being available
+                console.log('Storage not available, using in-memory only');
+            }
+        }
+
+        // Set random background
+        function setRandomBackground() {
+            const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+            document.body.style.background = randomBg;
+        }
+
+        // Show a new random quote
+        function showNewQuote() {
+            if (quotes.length === 0) return;
+            
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            const quote = quotes[randomIndex];
+            currentQuoteIndex = randomIndex;
+            
+            document.getElementById('quoteText').textContent = `"${quote.text}"`;
+            document.getElementById('quoteAuthor').textContent = quote.author ? `— ${quote.author}` : '';
+            
+            lastQuoteChange = Date.now();
+            try {
+                localStorage.setItem('lastQuoteChange', lastQuoteChange.toString());
+            } catch (error) {
+                // Handle localStorage not being available
+            }
+            updateStats();
+        }
+
+        // Check if it's time to change the quote
+        function checkQuoteChange() {
+            const timeSinceLastChange = Date.now() - lastQuoteChange;
+            if (timeSinceLastChange >= QUOTE_CHANGE_INTERVAL) {
+                showNewQuote();
+            }
+            updateStats();
+        }
+
+        // Update time display
+        function updateTimeDisplay() {
+            const now = new Date();
+            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString();
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('quoteCount').textContent = quotes.length;
+            
+            const timeUntilNext = QUOTE_CHANGE_INTERVAL - (Date.now() - lastQuoteChange);
+            const minutesUntilNext = Math.floor(timeUntilNext / 60000);
+            const secondsUntilNext = Math.floor((timeUntilNext % 60000) / 1000);
+            
+            if (timeUntilNext > 0) {
+                document.getElementById('nextChange').textContent = `${minutesUntilNext}m ${secondsUntilNext}s`;
+            } else {
+                document.getElementById('nextChange').textContent = 'Now';
+            }
+        }
+
+        // Toggle management panel
+        function toggleManagement() {
+            const panel = document.getElementById('managementPanel');
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = 'block';
+                updateQuotesList();
+            }
+        }
+
+        // Add a new quote
+        function addQuote() {
+            const text = document.getElementById('newQuoteText').value.trim();
+            const author = document.getElementById('newQuoteAuthor').value.trim();
+            
+            if (!text) {
+                alert('Please enter a quote text');
+                return;
+            }
+            
+            quotes.push({ text, author });
+            saveQuotes();
+            updateQuotesList();
+            updateStats();
+            
+            // Clear form
+            document.getElementById('newQuoteText').value = '';
+            document.getElementById('newQuoteAuthor').value = '';
+        }
+
+        // Delete a quote
+        function deleteQuote(index) {
+            if (confirm('Are you sure you want to delete this quote?')) {
+                quotes.splice(index, 1);
+                saveQuotes();
+                updateQuotesList();
+                updateStats();
+            }
+        }
+
+        // Update quotes list display
+        function updateQuotesList() {
+            const list = document.getElementById('quotesList');
+            list.innerHTML = '';
+            
+            quotes.forEach((quote, index) => {
+                const item = document.createElement('div');
+                item.className = 'quote-item';
+                item.innerHTML = `
+                    <div class="quote-content">
+                        <div class="quote-item-text">"${quote.text}"</div>
+                        <div class="quote-item-author">${quote.author || 'Unknown'}</div>
+                    </div>
+                    <button class="delete-quote" onclick="deleteQuote(${index})">Delete</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Handle file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                
+                try {
+                    if (file.name.endsWith('.json')) {
+                        const jsonQuotes = JSON.parse(content);
+                        if (Array.isArray(jsonQuotes)) {
+                            quotes.push(...jsonQuotes);
+                        }
+                    } else {
+                        // Assume text file
+                        const lines = content.split('\n').filter(line => line.trim());
+                        lines.forEach(line => {
+                            const match = line.match(/^"(.+?)"\s*-?\s*(.*)$/);
+                            if (match) {
+                                quotes.push({
+                                    text: match[1].trim(),
+                                    author: match[2].trim() || ''
+                                });
+                            } else if (line.trim()) {
+                                quotes.push({
+                                    text: line.trim(),
+                                    author: ''
+                                });
+                            }
+                        });
+                    }
+                    
+                    saveQuotes();
+                    updateQuotesList();
+                    updateStats();
+                    alert(`Successfully imported ${file.name}`);
+                } catch (error) {
+                    alert('Error reading file. Please check the format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Handle page refresh
+        window.addEventListener('beforeunload', function() {
+            try {
+                localStorage.setItem('lastQuoteChange', lastQuoteChange.toString());
+            } catch (error) {
+                // Handle localStorage not being available
+            }
+        });
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+
+        // Set new background on page refresh
+        window.addEventListener('load', setRandomBackground);
+    </script>
+</body>
+</html>
