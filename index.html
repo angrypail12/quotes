@@ -323,12 +323,16 @@
             <div class="quote-list-section">
                 <h3>Your Quotes</h3>
                 <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeaa7;">
-                    <strong>Keyboard Controls (if buttons don't work):</strong><br>
-                    • Press <kbd>D</kbd> then quote number (1-9) to delete<br>
-                    • Press <kbd>N</kbd> to show new quote<br>
-                    • Press <kbd>A</kbd> to add quote via prompt<br>
-                    • Example: Press D then 3 to delete quote #3
+                    <strong>For NanoBrowser:</strong> Edit the text below directly. Each line = one quote. Format: "Quote text" - Author
                 </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4>Edit All Quotes as Text:</h4>
+                    <textarea id="quotesTextEditor" rows="10" style="width: 100%; padding: 10px; font-family: monospace; border: 2px solid #ddd; border-radius: 5px;"></textarea>
+                    <button onclick="updateQuotesFromText()" style="background: #2ed573; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">Update Quotes from Text</button>
+                    <button onclick="loadTextEditor()" style="background: #3742fa; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; margin-left: 10px;">Load Current Quotes</button>
+                </div>
+                
                 <button onclick="deleteQuoteByNumber()" style="background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px;">Delete Quote by Number</button>
                 <button onclick="addQuoteViaPrompt()" style="background: #2ed573; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; margin-left: 10px;">Add Quote via Prompt</button>
                 <div id="quotesList"></div>
@@ -481,6 +485,7 @@
             } else {
                 panel.style.display = 'block';
                 updateQuotesList();
+                loadTextEditor(); // Auto-load current quotes into text editor
             }
         }
 
@@ -504,6 +509,61 @@
             document.getElementById('newQuoteAuthor').value = '';
         }
 
+        // Load current quotes into text editor
+        function loadTextEditor() {
+            const textarea = document.getElementById('quotesTextEditor');
+            const quotesText = quotes.map(quote => {
+                if (quote.author) {
+                    return `"${quote.text}" - ${quote.author}`;
+                } else {
+                    return `"${quote.text}"`;
+                }
+            }).join('\n');
+            textarea.value = quotesText;
+        }
+
+        // Update quotes from text editor
+        function updateQuotesFromText() {
+            const textarea = document.getElementById('quotesTextEditor');
+            const text = textarea.value.trim();
+            
+            if (!text) {
+                quotes = [];
+                saveQuotes();
+                updateQuotesList();
+                updateStats();
+                return;
+            }
+            
+            const lines = text.split('\n').filter(line => line.trim());
+            quotes = [];
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                // Try to parse "Quote text" - Author format
+                const match = line.match(/^"(.+?)"\s*-?\s*(.*)$/);
+                if (match) {
+                    quotes.push({
+                        text: match[1].trim(),
+                        author: match[2].trim() || ''
+                    });
+                } else {
+                    // Just treat whole line as quote text
+                    quotes.push({
+                        text: line.replace(/^["']|["']$/g, ''), // Remove quotes if present
+                        author: ''
+                    });
+                }
+            });
+            
+            saveQuotes();
+            updateQuotesList();
+            updateStats();
+            showNewQuote(); // Show a new quote to reflect changes
+        }
+
         // Add quote via prompt (alternative method)
         function addQuoteViaPrompt() {
             const text = prompt('Enter quote text:');
@@ -517,50 +577,15 @@
             alert('Quote added successfully!');
         }
 
-        // Keyboard shortcuts for NanoBrowser compatibility
-        let deleteMode = false;
-        
+        // Keyboard shortcuts for NanoBrowser compatibility  
         function setupKeyboardControls() {
             document.addEventListener('keydown', function(event) {
-                // Only work when management panel is open
-                const panel = document.getElementById('managementPanel');
-                if (panel.style.display !== 'block') return;
-                
                 const key = event.key.toLowerCase();
                 
-                if (key === 'd') {
-                    deleteMode = true;
-                    alert('Delete mode activated. Press a number 1-9 to delete that quote.');
-                    return;
-                }
-                
+                // 'N' works for new quote anywhere
                 if (key === 'n') {
                     showNewQuote();
-                    alert('New quote shown!');
                     return;
-                }
-                
-                if (key === 'a') {
-                    addQuoteViaPrompt();
-                    return;
-                }
-                
-                // Handle delete by number
-                if (deleteMode && key >= '1' && key <= '9') {
-                    const index = parseInt(key) - 1;
-                    if (index < quotes.length) {
-                        const quote = quotes[index];
-                        if (confirm(`Delete this quote?\n\n"${quote.text}"\n— ${quote.author || 'Unknown'}`)) {
-                            quotes.splice(index, 1);
-                            saveQuotes();
-                            updateQuotesList();
-                            updateStats();
-                            alert('Quote deleted!');
-                        }
-                    } else {
-                        alert(`No quote #${key}. You have ${quotes.length} quotes.`);
-                    }
-                    deleteMode = false;
                 }
             });
         }
